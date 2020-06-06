@@ -1,3 +1,5 @@
+import 'package:chatsakki/controller/auth_controller.dart';
+import 'package:chatsakki/login.dart';
 import 'package:flutter/material.dart';
 import 'package:chatsakki/intro_and_uthenticate/Screens/Signup/signup_screen.dart';
 import 'package:chatsakki/intro_and_uthenticate/components/already_have_an_account_acheck.dart';
@@ -9,12 +11,8 @@ import '../Login/components/background.dart';
 
 import 'dart:async';
 import 'package:chatsakki/helperfunctions.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
-import '../../../const.dart';
 import '../../../home.dart';
-import '../../../widget/loading.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
@@ -30,18 +28,22 @@ class _LoginScreenState extends State<LoginScreen> {
   final GoogleSignIn googleSignIn = GoogleSignIn();
   final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
   FirebaseUser currentUser;
+  TextEditingController emailEditingController = new TextEditingController();
+  TextEditingController passwordEditingController = new TextEditingController();
   bool isLoading = false;
   bool isLoggedIn = false;
 
   @override
   void initState() {
     print("inside the login.drt");
+    //for(String x in  xyz)
+    //  print(xyz.toString());
     super.initState();
     isSignedIn();
   }
 
   void isSignedIn() async {
-    this.setState(() {
+   this.setState(() {
       isLoading = true;
     });
 
@@ -60,78 +62,47 @@ class _LoginScreenState extends State<LoginScreen> {
       isLoading = false;
     });
   }
-
-  Future<Null> handleSignIn() async {
-    //prefs = await SharedPreferences.getInstance();
-
-    this.setState(() {
-      isLoading = true;
-    });
-
-    GoogleSignInAccount googleUser = await googleSignIn.signIn();
-    GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-    print("credentils : ${googleAuth.accessToken} and ${googleAuth.idToken} ");
-    final AuthCredential credential = GoogleAuthProvider.getCredential(
-      accessToken: googleAuth.accessToken,
-      idToken: googleAuth.idToken,
-
-    );
-
-
-    try {
-      FirebaseUser firebaseUser = (await firebaseAuth.signInWithCredential(
-          credential)).user;
-      if (firebaseUser != null) {
-        // Check is already sign up
-        final QuerySnapshot result =
-        await Firestore.instance.collection('users').where(
-            'id', isEqualTo: firebaseUser.uid).getDocuments();
-        final List<DocumentSnapshot> documents = result.documents;
-        if (documents.length == 0) {
-          // Update data to server if new user
-          Firestore.instance.collection('users')
-              .document(firebaseUser.uid)
-              .setData({
-            'email': firebaseUser.email,
-            'nickname': firebaseUser.displayName,
-            'photoUrl': firebaseUser.photoUrl,
-            'id': firebaseUser.uid,
-            'createdAt': DateTime
-                .now()
-                .millisecondsSinceEpoch
-                .toString(),
-            'chattingWith': null
-          });
-
-          // Write data to local
-          currentUser = firebaseUser;
-          await HelperFunctions.saveUserEmailSharedPreference(currentUser.email);//prefs.setString('id', currentUser.uid);
-          await HelperFunctions.saveUserIdSharedPreference(currentUser.uid);//prefs.setString('id', currentUser.uid);
-          await HelperFunctions.saveUserNameSharedPreference(currentUser.displayName);//prefs.setString('nickname', currentUser.displayName);
-          await HelperFunctions.saveUserPhotoUrlSharedPreference(currentUser.photoUrl);//prefs.setString('photoUrl', currentUser.photoUrl);
-        } else {
-          // Write data to local
-          await HelperFunctions.saveUserEmailSharedPreference(documents[0]['email']);//prefs.setString('id', currentUser.uid);
-          await HelperFunctions.saveUserIdSharedPreference(documents[0]['id']);//prefs.setString('id', currentUser.uid);
-          await HelperFunctions.saveUserNameSharedPreference(documents[0]['nickname']);//prefs.setString('nickname', currentUser.displayName);
-          await HelperFunctions.saveUserPhotoUrlSharedPreference(documents[0]['photoUrl']);//prefs.setString('photoUrl', currentUser.photoUrl);
-          await HelperFunctions.saveUserAboutMeSharedPreference(documents[0]['aboutMe']);
-        }
-
+  Future<Null> handleSignIn() async{
+    try{
+      FirebaseUser firebaseUser = await AuthController().signInWithEmailAndPassword(emailEditingController.text, passwordEditingController.text);
+      print("firebase user is:.......$firebaseUser");
+      if(firebaseUser != null){
         Fluttertoast.showToast(msg: "Sign in success");
-        this.setState(() {
-          isLoading = false;
-        });
-
         Navigator.push(context, MaterialPageRoute(
             builder: (context) => HomeScreen(currentUserId: firebaseUser.uid)));
       } else {
-        Fluttertoast.showToast(msg: "Sign in fail");
         this.setState(() {
           isLoading = false;
         });
+        Fluttertoast.showToast(msg: "User doesn\'t exist");
+      }
+    }catch (e) {
+      this.setState(() {
+        isLoading = false;
+      });
+      Fluttertoast.showToast(msg: "Sign in fail");
+      print("error thrown in login page is :   ${e.toString()}");
+    }
+  }
+  Future<Null> handleGoogleSignIn() async {
+    //prefs = await SharedPreferences.getInstance();
+    try {
+      FirebaseUser firebaseUser = await AuthController().signInWithGoogle(context);
+      print("firebase user using google sign in is:.......$firebaseUser");
+      if(firebaseUser != null){
+        Fluttertoast.showToast(msg: "Sign in success");
+        Navigator.push(context, MaterialPageRoute(
+            builder: (context) => HomeScreen(currentUserId: firebaseUser.uid)));
+      } else {
+         this.setState(() {
+           isLoading = false;
+         });
+        Fluttertoast.showToast(msg: "Sign in fail");
       }
     } catch (e) {
+      this.setState(() {
+        isLoading = false;
+      });
       Fluttertoast.showToast(msg: "Sign in fail");
       print("error thrown in login page is :   ${e.toString()}");
     }
@@ -158,15 +129,26 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               SizedBox(height: size.height * 0.03),
               RoundedInputField(
+                keyBoardType: TextInputType.emailAddress,
                 hintText: "Your Email",
-                onChanged: (value) {},
+                onChanged: (value) {
+                  emailEditingController.text = value;
+                },
               ),
               RoundedPasswordField(
-                onChanged: (value) {},
+                onChanged: (value) {
+                  passwordEditingController.text = value;
+                },
               ),
-              RoundedButton(
+              isLoading
+                  ? Container(
+                child: Center(child: CircularProgressIndicator()),
+              ): RoundedButton(
                 text: "LOGIN",
-                press: () {},
+                press: (){
+                  handleSignIn();
+                  this.setState(() { isLoading = true;});
+                },
               ),
               SizedBox(height: size.height * 0.03),
               AlreadyHaveAnAccountCheck(
@@ -198,7 +180,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   SocalIcon(
                     colors: Colors.red,
                     iconSrc: "assets/icons/google-plus.svg",
-                    press: handleSignIn,
+                    press: (){
+                      handleGoogleSignIn();
+                      this.setState(() { isLoading = true;});
+                    },//,
                   ),
                 ],
               )

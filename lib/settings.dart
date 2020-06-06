@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:chatsakki/helperfunctions.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -35,7 +36,7 @@ class SettingsScreenState extends State<SettingsScreen> {
   TextEditingController controllerNickname;
   TextEditingController controllerAboutMe;
 
-  SharedPreferences prefs;
+  //SharedPreferences prefs;
 
   String id = '';
   String nickname = '';
@@ -55,11 +56,11 @@ class SettingsScreenState extends State<SettingsScreen> {
   }
 
   void readLocal() async {
-    prefs = await SharedPreferences.getInstance();
-    id = prefs.getString('id') ?? '';
-    nickname = prefs.getString('nickname') ?? '';
-    aboutMe = prefs.getString('aboutMe') ?? '';
-    photoUrl = prefs.getString('photoUrl') ?? '';
+    //prefs = await SharedPreferences.getInstance();
+    id = await HelperFunctions.getUserIdSharedPreference() ?? '';//prefs.getString('id') ?? '';
+    nickname = await HelperFunctions.getUserNameSharedPreference() ?? '';//prefs.getString('nickname') ?? '';
+    aboutMe = await HelperFunctions.getUserAboutMeSharedPreference() ?? '';//prefs.getString('aboutMe') ?? '';
+    photoUrl = await HelperFunctions.getUserPhotoUrlSharedPreference() ?? '';//prefs.getString('photoUrl') ?? '';
 
     controllerNickname = TextEditingController(text: nickname);
     controllerAboutMe = TextEditingController(text: aboutMe);
@@ -97,7 +98,7 @@ class SettingsScreenState extends State<SettingsScreen> {
               .collection('users')
               .document(id)
               .updateData({'nickname': nickname, 'aboutMe': aboutMe, 'photoUrl': photoUrl}).then((data) async {
-            await prefs.setString('photoUrl', photoUrl);
+            await HelperFunctions.saveUserPhotoUrlSharedPreference(photoUrl);//prefs.setString('photoUrl', photoUrl);
             setState(() {
               isLoading = false;
             });
@@ -140,9 +141,9 @@ class SettingsScreenState extends State<SettingsScreen> {
         .collection('users')
         .document(id)
         .updateData({'nickname': nickname, 'aboutMe': aboutMe, 'photoUrl': photoUrl}).then((data) async {
-      await prefs.setString('nickname', nickname);
-      await prefs.setString('aboutMe', aboutMe);
-      await prefs.setString('photoUrl', photoUrl);
+      await HelperFunctions.saveUserNameSharedPreference(nickname);//prefs.setString('nickname', nickname);
+      await HelperFunctions.saveUserAboutMeSharedPreference(aboutMe);//prefs.setString('aboutMe', aboutMe);
+      await HelperFunctions.saveUserPhotoUrlSharedPreference(photoUrl);//prefs.setString('photoUrl', photoUrl);
 
       setState(() {
         isLoading = false;

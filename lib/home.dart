@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:chatsakki/controller/auth_controller.dart';
 import 'package:chatsakki/login.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -33,7 +34,7 @@ class HomeScreenState extends State<HomeScreen> {
   final String currentUserId;
   final FirebaseMessaging firebaseMessaging = FirebaseMessaging();
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-  final GoogleSignIn googleSignIn = GoogleSignIn();
+  //final GoogleSignIn googleSignIn = GoogleSignIn();
 
   bool isLoading = false;
   List<Choice> choices = const <Choice>[
@@ -208,10 +209,11 @@ class HomeScreenState extends State<HomeScreen> {
     this.setState(() {
       isLoading = true;
     });
-
-    await FirebaseAuth.instance.signOut();
-    await googleSignIn.disconnect();
-    await googleSignIn.signOut();
+    /*await FirebaseAuth.instance.signOut();
+    //  await googleSignIn.disconnect();
+      await GoogleSignIn().signOut();
+*/
+    await AuthController().signOut();
 
     this.setState(() {
       isLoading = false;
