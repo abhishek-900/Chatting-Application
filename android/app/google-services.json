@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "214779626502",
+    "firebase_url": "https://chats-530c6.firebaseio.com",
+    "project_id": "chats-530c6",
+    "storage_bucket": "chats-530c6.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:214779626502:android:8a58aac77cfbb1503aaf87",
+        "android_client_info": {
+          "package_name": "com.food.chatsakki"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "214779626502-v43v7rp2dbsl6srhsu527hbpvqj3h41j.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.food.chatsakki",
+            "certificate_hash": "f187497f54daf23a149086e4767fb5cb4f0cd6ad"
+          }
+        },
+        {
+          "client_id": "214779626502-a0ahhosimlt4lvlcdfanqehcojt8remo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC-GpBa5yYNNfnMbgDoNeQRxqiMWGyPKdk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "214779626502-a0ahhosimlt4lvlcdfanqehcojt8remo.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
