@@ -28,9 +28,9 @@ class HomeScreen extends StatefulWidget {
   State createState() => HomeScreenState(currentUserId: currentUserId);
 }
 
-class HomeScreenState extends State<HomeScreen> {
+class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver{
   HomeScreenState({Key key, @required this.currentUserId});
-
+  String connectionStatus;
   final String currentUserId;
   final FirebaseMessaging firebaseMessaging = FirebaseMessaging();
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
@@ -44,10 +44,26 @@ class HomeScreenState extends State<HomeScreen> {
 
   @override
   void initState() {
+    WidgetsBinding.instance.addObserver(this);
     print("now in the home screen pge with id : ${widget.currentUserId}");
     super.initState();
     registerNotification();
     configLocalNotification();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // TODO: implement didChangeAppLifecycleState
+    super.didChangeAppLifecycleState(state);
+    print(" checking status :- :- :-     $state");
+    if(state == AppLifecycleState.resumed){
+      connectionStatus = 'Online';
+    }
+    else{
+      connectionStatus = 'Offline';
+    }
+    Firestore.instance.collection('users').document(widget.currentUserId).updateData({'connectionStatus' : connectionStatus});
+    setState(() {});
   }
 
   void registerNotification() {
@@ -372,6 +388,8 @@ class HomeScreenState extends State<HomeScreen> {
                     builder: (context) => Chat(
                           peerId: document.documentID,
                           peerAvatar: document['photoUrl'],
+                          //connectionStatus: document['connectionStatus'],
+                          userName: document['nickname'],
                         )));
           },
           color: greyColor2,

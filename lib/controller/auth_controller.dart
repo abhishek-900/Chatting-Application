@@ -45,7 +45,8 @@ class AuthController {
               .now()
               .millisecondsSinceEpoch
               .toString(),
-          'chattingWith': null
+          'chattingWith': null,
+          'connectionStatus' : 'Online'
         });
 
         await HelperFunctions.saveUserLoggedInSharedPreference(true);
@@ -108,7 +109,8 @@ class AuthController {
                 .now()
                 .millisecondsSinceEpoch
                 .toString(),
-            'chattingWith': null
+            'chattingWith': null,
+            'connectionStatus' : 'Online'
           });
           await HelperFunctions.saveUserLoggedInSharedPreference(true);
           await HelperFunctions.saveUserEmailSharedPreference(
@@ -149,4 +151,6 @@ class AuthController {
       return null;
     }
   }
+
+  Stream<DocumentSnapshot> getConnectionStatus({@required peerId}) => Firestore.instance.collection('users').document(peerId).snapshots();
 }

@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:chatsakki/controller/auth_controller.dart';
+import 'package:chatsakki/helperfunctions.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -11,23 +13,90 @@ import 'widget/loading.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class Chat extends StatelessWidget {
   final String peerId;
   final String peerAvatar;
+  String connectionStatus;
+  final String userName;
 
-  Chat({Key key, @required this.peerId, @required this.peerAvatar}) : super(key: key);
+  Chat({Key key, @required this.peerId, @required this.peerAvatar, /*@required this.connectionStatus,*/ @required this.userName}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    print("user nme in cht is........$userName");
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'CHAT',
-          style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
+        leading: Icon(Icons.arrow_back),
+        title: Row(
+          children: <Widget>[
+            Material(
+              child: peerAvatar != null
+                  ? CachedNetworkImage(
+                /*placeholder: (context, url) => Container(
+                  child: CircularProgressIndicator(
+                    strokeWidth: 1.0,
+                    valueColor: AlwaysStoppedAnimation<Color>(themeColor),
+                  ),
+                  width: 50.0,
+                  height: 50.0,
+                  padding: EdgeInsets.all(15.0),
+                ),*/
+                imageUrl:peerAvatar,
+                width: 40.0,
+                height: 40.0,
+                fit: BoxFit.contain,
+              )
+                  : Icon(
+                Icons.account_circle,
+                size: 50.0,
+                color: greyColor,
+              ),
+              borderRadius: BorderRadius.all(Radius.circular(25.0)),
+              clipBehavior: Clip.hardEdge,
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: StreamBuilder(
+                  stream: AuthController().getConnectionStatus(peerId: peerId),
+                 // initialData: AuthController().getConnectionStatus(peerId: peerId),
+                  builder: (context, snapshot){
+                    print("Now printing the snapsssss");
+                    print("Snapshot");
+                    print(snapshot.data.toString());
+                    if(snapshot.data == null || snapshot == null){
+                      return Text(
+                        userName,
+                        style: TextStyle(color: primaryColor,
+                            fontWeight: FontWeight.bold),
+                      );
+                    }else{
+                      DocumentSnapshot ref = snapshot.data;
+                      print("docs");
+                      print(ref);
+                      print(ref.data);
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text(
+                            userName,
+                            style: TextStyle(color: primaryColor,
+                                fontWeight: FontWeight.bold),
+                          ),
+                          if(ref.data["connectionStatus"] != null)
+                            Text(
+                              ref.data["connectionStatus"],
+                              style: TextStyle(color: Colors.white,
+                                  fontSize: 14.0),
+                            ),
+                        ],
+                      );
+                    }
+                  }),
+            ),
+          ],
         ),
-        centerTitle: true,
+       // centerTitle: true,
       ),
       body: ChatScreen(
         peerId: peerId,
@@ -47,7 +116,7 @@ class ChatScreen extends StatefulWidget {
   State createState() => ChatScreenState(peerId: peerId, peerAvatar: peerAvatar);
 }
 
-class ChatScreenState extends State<ChatScreen> {
+class ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   ChatScreenState({Key key, @required this.peerId, @required this.peerAvatar});
 
   String peerId;
@@ -56,7 +125,7 @@ class ChatScreenState extends State<ChatScreen> {
 
   var listMessage;
   String groupChatId;
-  SharedPreferences prefs;
+  //SharedPreferences prefs;
 
   File imageFile;
   bool isLoading;
@@ -70,17 +139,16 @@ class ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     print("init of cht.drt");
+    WidgetsBinding.instance.addObserver(this);
     super.initState();
     focusNode.addListener(onFocusChange);
-
     groupChatId = '';
-
     isLoading = false;
     isShowSticker = false;
     imageUrl = '';
-
     readLocal();
   }
+
 
   void onFocusChange() {
     if (focusNode.hasFocus) {
@@ -92,8 +160,8 @@ class ChatScreenState extends State<ChatScreen> {
   }
 
   readLocal() async {
-    prefs = await SharedPreferences.getInstance();
-    id = prefs.getString('id') ?? '';
+    //prefs = await SharedPreferences.getInstance();
+    id = await HelperFunctions.getUserIdSharedPreference();//prefs.getString('id') ?? '';
     if (id.hashCode <= peerId.hashCode) {
       groupChatId = '$id-$peerId';
     } else {
@@ -410,15 +478,12 @@ class ChatScreenState extends State<ChatScreen> {
             children: <Widget>[
               // List of messages
               buildListMessage(),
-
               // Sticker
               (isShowSticker ? buildSticker() : Container()),
-
               // Input content
               buildInput(),
             ],
           ),
-
           // Loading
           buildLoading()
         ],

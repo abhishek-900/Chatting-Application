@@ -62,6 +62,7 @@ class _LoginScreenState extends State<LoginScreen> {
       isLoading = false;
     });
   }
+
   Future<Null> handleSignIn() async{
     try{
       FirebaseUser firebaseUser = await AuthController().signInWithEmailAndPassword(emailEditingController.text, passwordEditingController.text);

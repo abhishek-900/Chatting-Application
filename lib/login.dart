@@ -96,7 +96,8 @@ class LoginScreenState extends State<LoginScreen> {
                 .now()
                 .millisecondsSinceEpoch
                 .toString(),
-            'chattingWith': null
+            'chattingWith': null,
+            'connectionStatus' : 'Online'
           });
 
           // Write data to local
