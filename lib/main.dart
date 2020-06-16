@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'const.dart';
 import 'helperfunctions.dart';
 import 'home.dart';
-import 'login.dart';
 
 void main(){
   WidgetsFlutterBinding.ensureInitialized();

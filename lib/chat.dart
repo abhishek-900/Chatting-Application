@@ -176,10 +176,10 @@ class ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   Future getImage() async {
     PickedFile imgFile = await ImagePicker().getImage(source: ImageSource.gallery);
     setState(() {
-      imageFile = File(imgFile.path);
+      imageFile = File(imgFile.path != null ? imgFile.path : '');
     });
 
-    if (imageFile != null) {
+    if (imageFile.existsSync()) {
       setState(() {
         isLoading = true;
       });

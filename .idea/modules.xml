@@ -2,8 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/chatsakki.iml" filepath="$PROJECT_DIR$/chatsakki.iml" />
-      <module fileurl="file://$PROJECT_DIR$/android/chatsakki_android.iml" filepath="$PROJECT_DIR$/android/chatsakki_android.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/chats_akki.iml" filepath="$PROJECT_DIR$/.idea/chats_akki.iml" />
     </modules>
   </component>
 </project>

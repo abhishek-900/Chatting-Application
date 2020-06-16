@@ -11,13 +11,22 @@ class FullPhoto extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        actionsIconTheme: IconThemeData(color: Colors.white),
+        brightness: Brightness.dark,
+        backgroundColor: Colors.transparent.withOpacity(0.9),
         title: Text(
-          'FULL PHOTO',
-          style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
+          'Profile Image',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
+        iconTheme: IconThemeData(color: Colors.white),
+        actions: <Widget>[
+          IconButton(icon: Icon(Icons.edit), onPressed: (){}),
+          IconButton(icon: Icon(Icons.share), onPressed: (){}),
+        ],
       ),
       body: FullPhotoScreen(url: url),
+      backgroundColor: Colors.black,
     );
   }
 }
@@ -43,6 +52,6 @@ class FullPhotoScreenState extends State<FullPhotoScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(child: PhotoView(imageProvider: NetworkImage(url)));
+    return Center(child: Container(child: PhotoView(imageProvider: NetworkImage(url))));
   }
 }

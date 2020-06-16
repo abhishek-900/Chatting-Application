@@ -3,9 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chatsakki/controller/auth_controller.dart';
-import 'package:chatsakki/login.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'chat.dart';
@@ -15,9 +13,6 @@ import 'settings.dart';
 import 'widget/loading.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-
-import 'main.dart';
 
 class HomeScreen extends StatefulWidget {
   final String currentUserId;
@@ -44,9 +39,9 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver{
 
   @override
   void initState() {
+    super.initState();
     WidgetsBinding.instance.addObserver(this);
     print("now in the home screen pge with id : ${widget.currentUserId}");
-    super.initState();
     registerNotification();
     configLocalNotification();
   }
@@ -63,6 +58,7 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver{
       connectionStatus = 'Offline';
     }
     Firestore.instance.collection('users').document(widget.currentUserId).updateData({'connectionStatus' : connectionStatus});
+    if(this.mounted)
     setState(() {});
   }
 

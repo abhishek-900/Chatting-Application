@@ -3,13 +3,13 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chatsakki/helperfunctions.dart';
+import 'package:chatsakki/widget/full_photo.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'const.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class Settings extends StatelessWidget {
   @override
@@ -57,14 +57,19 @@ class SettingsScreenState extends State<SettingsScreen> {
 
   void readLocal() async {
     //prefs = await SharedPreferences.getInstance();
-    id = await HelperFunctions.getUserIdSharedPreference() ?? '';//prefs.getString('id') ?? '';
-    nickname = await HelperFunctions.getUserNameSharedPreference() ?? '';//prefs.getString('nickname') ?? '';
-    aboutMe = await HelperFunctions.getUserAboutMeSharedPreference() ?? '';//prefs.getString('aboutMe') ?? '';
-    photoUrl = await HelperFunctions.getUserPhotoUrlSharedPreference() ?? '';//prefs.getString('photoUrl') ?? '';
+    id = await HelperFunctions.getUserIdSharedPreference() ??
+        ''; //prefs.getString('id') ?? '';
+    nickname = await HelperFunctions.getUserNameSharedPreference() ??
+        ''; //prefs.getString('nickname') ?? '';
+    aboutMe = await HelperFunctions.getUserAboutMeSharedPreference() ??
+        ''; //prefs.getString('aboutMe') ?? '';
+    photoUrl = await HelperFunctions.getUserPhotoUrlSharedPreference() ??
+        ''; //prefs.getString('photoUrl') ?? '';
 
     controllerNickname = TextEditingController(text: nickname);
     controllerAboutMe = TextEditingController(text: aboutMe);
-
+    print("in settings wht we get is......");
+    print("$id --> $nickname --> $aboutMe --> $photoUrl");
     // Force refresh input
     setState(() {});
   }
@@ -73,8 +78,8 @@ class SettingsScreenState extends State<SettingsScreen> {
     PickedFile imgs = await ImagePicker().getImage(source: ImageSource.gallery);
     File image;
     setState(() {
-  image = File(imgs.path);
-});
+      image = File(imgs.path);
+    });
     if (image != null) {
       setState(() {
         avatarImageFile = image;
@@ -94,11 +99,13 @@ class SettingsScreenState extends State<SettingsScreen> {
         storageTaskSnapshot = value;
         storageTaskSnapshot.ref.getDownloadURL().then((downloadUrl) {
           photoUrl = downloadUrl;
-          Firestore.instance
-              .collection('users')
-              .document(id)
-              .updateData({'nickname': nickname, 'aboutMe': aboutMe, 'photoUrl': photoUrl}).then((data) async {
-            await HelperFunctions.saveUserPhotoUrlSharedPreference(photoUrl);//prefs.setString('photoUrl', photoUrl);
+          Firestore.instance.collection('users').document(id).updateData({
+            'nickname': nickname,
+            'aboutMe': aboutMe,
+            'photoUrl': photoUrl
+          }).then((data) async {
+            await HelperFunctions.saveUserPhotoUrlSharedPreference(
+                photoUrl); //prefs.setString('photoUrl', photoUrl);
             setState(() {
               isLoading = false;
             });
@@ -137,13 +144,17 @@ class SettingsScreenState extends State<SettingsScreen> {
       isLoading = true;
     });
 
-    Firestore.instance
-        .collection('users')
-        .document(id)
-        .updateData({'nickname': nickname, 'aboutMe': aboutMe, 'photoUrl': photoUrl}).then((data) async {
-      await HelperFunctions.saveUserNameSharedPreference(nickname);//prefs.setString('nickname', nickname);
-      await HelperFunctions.saveUserAboutMeSharedPreference(aboutMe);//prefs.setString('aboutMe', aboutMe);
-      await HelperFunctions.saveUserPhotoUrlSharedPreference(photoUrl);//prefs.setString('photoUrl', photoUrl);
+    Firestore.instance.collection('users').document(id).updateData({
+      'nickname': nickname,
+      'aboutMe': aboutMe,
+      'photoUrl': photoUrl
+    }).then((data) async {
+      await HelperFunctions.saveUserNameSharedPreference(
+          nickname); //prefs.setString('nickname', nickname);
+      await HelperFunctions.saveUserAboutMeSharedPreference(
+          aboutMe); //prefs.setString('aboutMe', aboutMe);
+      await HelperFunctions.saveUserPhotoUrlSharedPreference(
+          photoUrl); //prefs.setString('photoUrl', photoUrl);
 
       setState(() {
         isLoading = false;
@@ -165,66 +176,114 @@ class SettingsScreenState extends State<SettingsScreen> {
       children: <Widget>[
         SingleChildScrollView(
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               // Avatar
-              Container(
-                child: Center(
+              Center(
+                child: Container(
+                  height: 300.0,
+                  margin: EdgeInsets.only(top: 50.0),
+                 // color: Colors.green,
+                  width: 300.0,
                   child: Stack(
                     children: <Widget>[
                       (avatarImageFile == null)
                           ? (photoUrl != ''
-                              ? Material(
-                                  child: CachedNetworkImage(
-                                    placeholder: (context, url) => Container(
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2.0,
-                                        valueColor: AlwaysStoppedAnimation<Color>(themeColor),
+                              ? FlatButton(
+                       // color: Colors.pink,
+                                  splashColor: Colors.white,
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    type: MaterialType.circle,
+                                    child: CachedNetworkImage(
+                                      placeholder: (context, url) => Container(
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2.0,
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                                  themeColor),
+                                        ),
+                                        width: 90.0,
+                                        height: 90.0,
+                                        //padding: EdgeInsets.all(20.0),
                                       ),
-                                      width: 90.0,
-                                      height: 90.0,
-                                      padding: EdgeInsets.all(20.0),
+                                      imageUrl: photoUrl,
+                                      width: 500.0,
+                                      height: 500.0,
+                                      fit: BoxFit.cover,
                                     ),
-                                    imageUrl: photoUrl,
-                                    width: 90.0,
-                                    height: 90.0,
-                                    fit: BoxFit.cover,
+                                    clipBehavior: Clip.hardEdge,
                                   ),
-                                  borderRadius: BorderRadius.all(Radius.circular(45.0)),
-                                  clipBehavior: Clip.hardEdge,
+                                  onPressed: () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                FullPhoto(url: photoUrl)));
+                                  },
                                 )
-                              : Icon(
-                                  Icons.account_circle,
-                                  size: 90.0,
-                                  color: greyColor,
+                              : IconButton(
+                                  icon: Icon(
+                                    Icons.account_circle,
+                                    size: 90.0,
+                                    color: greyColor,
+                                  ),
+                                  onPressed: () {
+                                    Fluttertoast.showToast(
+                                        msg: 'No Profile Photo');
+                                  },
                                 ))
-                          : Material(
-                              child: Image.file(
-                                avatarImageFile,
-                                width: 90.0,
-                                height: 90.0,
-                                fit: BoxFit.cover,
+                          : FlatButton(
+                              splashColor: Colors.white,
+                              child: Material(
+                                child: Image.file(
+                                  avatarImageFile,
+                                  width: 190.0,
+                                  height: 190.0,
+                                  fit: BoxFit.cover,
+                                ),
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(45.0)),
+                                clipBehavior: Clip.hardEdge,
                               ),
-                              borderRadius: BorderRadius.all(Radius.circular(45.0)),
-                              clipBehavior: Clip.hardEdge,
+                              onPressed: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            FullPhoto(url: photoUrl)));
+                              },
                             ),
-                      IconButton(
-                        icon: Icon(
-                          Icons.camera_alt,
-                          color: primaryColor.withOpacity(0.5),
+                      Align(
+                        widthFactor: 4.5,
+                        heightFactor: 4.75,
+                        alignment: Alignment.bottomRight,
+                        child: Container(
+                          height: 60.0,
+                          width: 60.0,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.deepPurple,
+                          ),
+                          child: IconButton(
+                            icon: Icon(
+                              Icons.camera_alt,
+                              color: Colors.white,
+                            ),
+                            onPressed: gettingImage,
+                            splashColor: Colors.transparent,
+                            highlightColor: greyColor,
+                            iconSize: 25.0,
+                          ),
+
                         ),
-                        onPressed: gettingImage,
-                        padding: EdgeInsets.all(30.0),
-                        splashColor: Colors.transparent,
-                        highlightColor: greyColor,
-                        iconSize: 30.0,
                       ),
                     ],
                   ),
                 ),
-                width: double.infinity,
-                margin: EdgeInsets.all(20.0),
               ),
-
+SizedBox(height: 100.0,),
               // Input
               Column(
                 children: <Widget>[
@@ -232,13 +291,17 @@ class SettingsScreenState extends State<SettingsScreen> {
                   Container(
                     child: Text(
                       'Nickname',
-                      style: TextStyle(fontStyle: FontStyle.italic, fontWeight: FontWeight.bold, color: primaryColor),
+                      style: TextStyle(
+                          fontStyle: FontStyle.italic,
+                          fontWeight: FontWeight.bold,
+                          color: primaryColor),
                     ),
                     margin: EdgeInsets.only(left: 10.0, bottom: 5.0, top: 10.0),
                   ),
                   Container(
                     child: Theme(
-                      data: Theme.of(context).copyWith(primaryColor: primaryColor),
+                      data: Theme.of(context)
+                          .copyWith(primaryColor: primaryColor),
                       child: TextField(
                         decoration: InputDecoration(
                           hintText: 'Sweetie',
@@ -259,13 +322,17 @@ class SettingsScreenState extends State<SettingsScreen> {
                   Container(
                     child: Text(
                       'About me',
-                      style: TextStyle(fontStyle: FontStyle.italic, fontWeight: FontWeight.bold, color: primaryColor),
+                      style: TextStyle(
+                          fontStyle: FontStyle.italic,
+                          fontWeight: FontWeight.bold,
+                          color: primaryColor),
                     ),
                     margin: EdgeInsets.only(left: 10.0, top: 30.0, bottom: 5.0),
                   ),
                   Container(
                     child: Theme(
-                      data: Theme.of(context).copyWith(primaryColor: primaryColor),
+                      data: Theme.of(context)
+                          .copyWith(primaryColor: primaryColor),
                       child: TextField(
                         decoration: InputDecoration(
                           hintText: 'Fun, like travel and play PES...',
@@ -311,7 +378,8 @@ class SettingsScreenState extends State<SettingsScreen> {
           child: isLoading
               ? Container(
                   child: Center(
-                    child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(themeColor)),
+                    child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(themeColor)),
                   ),
                   color: Colors.white.withOpacity(0.8),
                 )

@@ -12,6 +12,24 @@ class AuthController {
       AuthResult result = await _auth.signInWithEmailAndPassword(
           email: email, password: password);
       FirebaseUser user = result.user;
+      DocumentSnapshot details = await Firestore.instance.collection('users')
+          .document(user.uid).get();
+     // print("${details.data['']}");
+      UserUpdateInfo userUpdateInfo = UserUpdateInfo();
+      userUpdateInfo.displayName = details.data["nickname"];
+      userUpdateInfo.photoUrl = details.data["photoUrl"];
+      user.updateProfile(userUpdateInfo);
+      await user.reload();
+      Firestore.instance.collection('users').document(user.uid).updateData({'connectionStatus' : 'Online'});
+          await HelperFunctions.saveUserLoggedInSharedPreference(true);
+          await HelperFunctions.saveUserEmailSharedPreference(user.email); //prefs.setString('id', currentUser.uid);
+          await HelperFunctions.saveUserIdSharedPreference(user.uid); //prefs.setString('id', currentUser.uid);
+          await HelperFunctions.saveUserNameSharedPreference(details.data["nickname"]); //prefs.setString('nickname', currentUser.displayName);
+          await HelperFunctions.saveUserPhotoUrlSharedPreference(details.data["photoUrl"]);
+          await HelperFunctions.saveUserAboutMeSharedPreference(details.data['aboutMe']);
+
+      print("sign in method mein kya ho rh hi??....");
+      print("{${user.uid} --> ${user.displayName} --> ${user.email} --> ${user.photoUrl}}");
 
       return user;
     } catch (e) {
@@ -143,9 +161,20 @@ class AuthController {
 
   Future signOut() async {
     try {
+      bool ans = await _googleSignIn.isSignedIn();
+      String id = await HelperFunctions.getUserIdSharedPreference();
+      await _auth.signOut();
+      if(ans)
+        await _googleSignIn.disconnect();
+      await _googleSignIn.signOut();
+      Firestore.instance.collection('users').document(id).updateData({'connectionStatus' : 'Offline'});
       await HelperFunctions.saveUserLoggedInSharedPreference(null);
-       await _auth.signOut();
-       await _googleSignIn.signOut();
+      await HelperFunctions.saveUserAboutMeSharedPreference(null);
+      await HelperFunctions.saveUserEmailSharedPreference(null);
+      await HelperFunctions.saveUserIdSharedPreference(null);
+      await HelperFunctions.saveUserNameSharedPreference(null);
+      await HelperFunctions.saveUserPhotoUrlSharedPreference(null);
+
     } catch (e) {
       print(e.toString());
       return null;

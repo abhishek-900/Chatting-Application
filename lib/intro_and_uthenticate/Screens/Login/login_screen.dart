@@ -1,5 +1,4 @@
 import 'package:chatsakki/controller/auth_controller.dart';
-import 'package:chatsakki/login.dart';
 import 'package:flutter/material.dart';
 import 'package:chatsakki/intro_and_uthenticate/Screens/Signup/signup_screen.dart';
 import 'package:chatsakki/intro_and_uthenticate/components/already_have_an_account_acheck.dart';
