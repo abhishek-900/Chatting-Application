@@ -28,6 +28,11 @@ class Chat extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         leading: Icon(Icons.arrow_back),
+        actions: <Widget>[
+          IconButton(icon: Icon(Icons.videocam), onPressed:(){
+            Navigator.push(context, MaterialPageRoute(builder: (context) => null));
+          }),
+        ],
         title: Row(
           children: <Widget>[
             Material(
