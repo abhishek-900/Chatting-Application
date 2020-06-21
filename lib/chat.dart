@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chatsakki/controller/auth_controller.dart';
 import 'package:chatsakki/helperfunctions.dart';
+import 'package:chatsakki/intro_and_uthenticate/constants.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -256,15 +257,29 @@ class ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
           document['type'] == 0
               // Text
               ? Container(
-                  child: Text(
-                    document['content'],
-                    style: TextStyle(color: primaryColor),
-                  ),
-                  padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),
-                  width: 200.0,
-                  decoration: BoxDecoration(color: greyColor2, borderRadius: BorderRadius.circular(8.0)),
-                  margin: EdgeInsets.only(bottom: isLastMessageRight(index) ? 20.0 : 10.0, right: 10.0),
-                )
+            child: Text(
+              document['content'],
+              style: TextStyle(color: Colors.white),
+            ),
+           padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),
+            width: 200.0,
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(15),
+                  topRight: Radius.circular(15),
+                  bottomLeft: Radius.circular(15),
+                ),
+               color: kPrimaryColor,
+                boxShadow: [
+                  BoxShadow(
+                      blurRadius: 20.0,
+                      offset: Offset(10, 10),
+                      color: Colors.black54)
+                ]),
+            margin: EdgeInsets.only(
+                bottom: isLastMessageRight(index) ? 20.0 : 10.0,
+                right: 10.0),
+          )
               : document['type'] == 1
                   // Image
                   ? Container(
@@ -358,15 +373,29 @@ class ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                     : Container(width: 35.0),
                 document['type'] == 0
                     ? Container(
-                        child: Text(
-                          document['content'],
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),
-                        width: 200.0,
-                        decoration: BoxDecoration(color: primaryColor, borderRadius: BorderRadius.circular(8.0)),
-                        margin: EdgeInsets.only(left: 10.0),
-                      )
+                  child: Text(
+                    document['content'],
+                    style: TextStyle(color: Colors.black),
+                  ),
+                  padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),
+                  width: 200.0,
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(15),
+                        topRight: Radius.circular(15),
+                        bottomRight: Radius.circular(15),
+                      ),
+                     color: kPrimaryLightColor,
+                      boxShadow: [
+                        BoxShadow(
+                            blurRadius: 20.0,
+                            offset: Offset(10, 10),
+                            color: Colors.black54)
+                      ]),
+                  margin: EdgeInsets.only(
+                      bottom: isLastMessageRight(index) ? 20.0 : 10.0,
+                      right: 10.0),
+                )
                     : document['type'] == 1
                         ? Container(
                             child: FlatButton(
