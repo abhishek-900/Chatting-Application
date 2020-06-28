@@ -1,4 +1,5 @@
 import 'package:chatsakki/intro_and_uthenticate/Screens/Welcome/welcome_screen.dart';
+import 'package:chatsakki/send_audio.dart';
 import 'package:flutter/material.dart';
 import 'const.dart';
 import 'helperfunctions.dart';
@@ -45,6 +46,10 @@ getLoggedInState() async {
     ),);
   }
 }
+
+/*
+void main() => runApp(MaterialApp(home: AudioRecorder(),));
+*/
 
 /*
 class MyApp extends StatefulWidget {

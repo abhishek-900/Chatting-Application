@@ -3,9 +3,11 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chatsakki/controller/auth_controller.dart';
+import 'package:chatsakki/widget/curve_app_bar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'chat.dart';
 import 'const.dart';
 import 'intro_and_uthenticate/Screens/Welcome/welcome_screen.dart';
@@ -30,7 +32,8 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver{
   final FirebaseMessaging firebaseMessaging = FirebaseMessaging();
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
   //final GoogleSignIn googleSignIn = GoogleSignIn();
-
+  List<String> chtIds=[];
+  List<String> timeIds=[];
   bool isLoading = false;
   List<Choice> choices = const <Choice>[
     const Choice(title: 'Settings', icon: Icons.settings),
@@ -42,8 +45,11 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver{
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     print("now in the home screen pge with id : ${widget.currentUserId}");
+    gettingTime();
     registerNotification();
     configLocalNotification();
+    getLists();
+
   }
 
   @override
@@ -62,6 +68,41 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver{
     setState(() {});
   }
 
+  void gettingTime()async {
+    print("now printing users snpssss");
+
+    await Firestore.instance
+            .collection('users')
+            .snapshots().forEach((element) {
+              List<DocumentSnapshot> liss = element.documents;
+              for(DocumentSnapshot dd in liss) {
+                if(dd.documentID != widget.currentUserId)
+                chtIds.add(
+                    '${widget.currentUserId.toString()}-${dd.documentID.toString()}');
+              }
+            });
+    }
+
+  void getLists() async {
+    print("getting lists....");
+    //for(String groupIds in chtIds){
+      print("iss id mein... ");
+      await Firestore.instance.collection('messages').snapshots().forEach((element) {
+        List<DocumentSnapshot> liss = element.documents;
+        for(DocumentSnapshot v in liss){
+          print("times hhhh ${v.documentID}");
+        timeIds.add(v.documentID.toString());
+        }
+      });/*document(groupIds).collection(groupIds)
+          .orderBy('timestamp', descending: true).snapshots().forEach((element) {
+            print("time elements is...$element");
+
+          print("dds re.....${liss[0].documentID.toString()}");
+         */ /*timeIds.add(
+                '${liss[0].documentID.toString()}');*/
+     // });
+  //}
+  }
   void registerNotification() {
     firebaseMessaging.requestNotificationPermissions();
     firebaseMessaging.configure(onMessage: (Map<String, dynamic> message) {
@@ -230,20 +271,20 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver{
     this.setState(() {
       isLoading = false;
     });
-
     Navigator.of(context)
         .pushAndRemoveUntil(MaterialPageRoute(builder: (context) => WelcomeScreen()), (Route<dynamic> route) => false);
-  }
+}
 
   @override
   Widget build(BuildContext context) {
+    print("cht ids to dekhlo...${chtIds}");
+    print("time ids to dekhlo...${timeIds} ${timeIds.length}");
     return Scaffold(
       appBar: AppBar(
         title: Text(
           'MAIN',
           style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
         ),
-        centerTitle: true,
         actions: <Widget>[
           IconButton(icon: Icon(Icons.search),onPressed: (){},),
           PopupMenuButton<Choice>(
@@ -289,7 +330,7 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver{
                   } else {
                     return ListView.builder(
                       padding: EdgeInsets.all(10.0),
-                      itemBuilder: (context, index) => buildItem(context, snapshot.data.documents[index]),
+                      itemBuilder: (context, index) => buildItem(context, snapshot.data.documents[index], index),
                       itemCount: snapshot.data.documents.length,
                       shrinkWrap: true,
                     );
@@ -297,7 +338,6 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver{
                 },
               ),
             ),
-
             // Loading
             Positioned(
               child: isLoading ? const Loading() : Container(),
@@ -309,7 +349,8 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver{
     );
   }
 
-  Widget buildItem(BuildContext context, DocumentSnapshot document) {
+  Widget buildItem(BuildContext context, DocumentSnapshot document, index) {
+    print("indexes rrr....$index");
     if (document['id'] == currentUserId) {
       return Container();
     } else {
@@ -346,30 +387,24 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver{
                 child: Container(
                   child: Column(
                     children: <Widget>[
-                      Container(
+                      ListTile(
+                        title: Text(
+                          '${document['nickname']}',
+                          style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),),
+                        /*trailing: timeIds.length != 0 ? Text(
+                            DateFormat('kk:mm')
+                                .format(DateTime.fromMillisecondsSinceEpoch(int.parse(timeIds[index++])))
+                        ): Container(width: 10,height: 10,),*/
+                      ),
+                      /*Container(
                         child: Text(
-                          'Nickname: ${document['nickname']}',
-                          style: TextStyle(color: primaryColor),
+                          '${document['nickname']}',
+                          style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
                         ),
                         alignment: Alignment.centerLeft,
                         margin: EdgeInsets.fromLTRB(10.0, 0.0, 0.0, 5.0),
-                      ),
-                      Container(
-                        child: Text(
-                          'Email: ${document['email']}',
-                          style: TextStyle(color: primaryColor),
-                        ),
-                        alignment: Alignment.centerLeft,
-                        margin: EdgeInsets.fromLTRB(10.0, 0.0, 0.0, 5.0),
-                      ),
-                      Container(
-                        child: Text(
-                          'About me: ${document['aboutMe'] ?? 'Not available'}',
-                          style: TextStyle(color: primaryColor),
-                        ),
-                        alignment: Alignment.centerLeft,
-                        margin: EdgeInsets.fromLTRB(10.0, 0.0, 0.0, 0.0),
-                      )
+                      ),*/
+                      Container()
                     ],
                   ),
                   margin: EdgeInsets.only(left: 20.0),
