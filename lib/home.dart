@@ -25,15 +25,17 @@ class HomeScreen extends StatefulWidget {
   State createState() => HomeScreenState(currentUserId: currentUserId);
 }
 
-class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver{
+class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   HomeScreenState({Key key, @required this.currentUserId});
   String connectionStatus;
   final String currentUserId;
   final FirebaseMessaging firebaseMessaging = FirebaseMessaging();
-  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
   //final GoogleSignIn googleSignIn = GoogleSignIn();
-  List<String> chtIds=[];
-  List<String> timeIds=[];
+  List<String> chtIds = [];
+  List<String> timeIds = [];
+  String person;
   bool isLoading = false;
   List<Choice> choices = const <Choice>[
     const Choice(title: 'Settings', icon: Icons.settings),
@@ -49,65 +51,73 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver{
     registerNotification();
     configLocalNotification();
     getLists();
-
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     // TODO: implement didChangeAppLifecycleState
     super.didChangeAppLifecycleState(state);
-    print(" checking status :- :- :-     $state");
-    if(state == AppLifecycleState.resumed){
+    //print(" checking status :- :- :-     $state");
+    if (state == AppLifecycleState.resumed) {
       connectionStatus = 'Online';
-    }
-    else{
+    } else {
       connectionStatus = 'Offline';
     }
-    Firestore.instance.collection('users').document(widget.currentUserId).updateData({'connectionStatus' : connectionStatus});
-    if(this.mounted)
-    setState(() {});
+    Firestore.instance
+        .collection('users')
+        .document(widget.currentUserId)
+        .updateData({'connectionStatus': connectionStatus});
+    if (this.mounted) setState(() {});
   }
 
-  void gettingTime()async {
+  void gettingTime() async {
     print("now printing users snpssss");
 
-    await Firestore.instance
-            .collection('users')
-            .snapshots().forEach((element) {
-              List<DocumentSnapshot> liss = element.documents;
-              for(DocumentSnapshot dd in liss) {
-                if(dd.documentID != widget.currentUserId)
-                chtIds.add(
-                    '${widget.currentUserId.toString()}-${dd.documentID.toString()}');
-              }
-            });
-    }
+    await Firestore.instance.collection('users').snapshots().forEach((element) {
+      List<DocumentSnapshot> liss = element.documents;
+      for (DocumentSnapshot dd in liss) {
+        if (dd.documentID != widget.currentUserId)
+          chtIds.add(
+              '${widget.currentUserId.toString()}-${dd.documentID.toString()}');
+        else
+          person = dd.data['nickname'];
+        print(person);
+      }
+    });
+  }
 
   void getLists() async {
     print("getting lists....");
     //for(String groupIds in chtIds){
-      print("iss id mein... ");
-      await Firestore.instance.collection('messages').snapshots().forEach((element) {
-        List<DocumentSnapshot> liss = element.documents;
-        for(DocumentSnapshot v in liss){
-          print("times hhhh ${v.documentID}");
+    print("iss id mein... ");
+    await Firestore.instance
+        .collection('messages')
+        .snapshots()
+        .forEach((element) {
+      List<DocumentSnapshot> liss = element.documents;
+      for (DocumentSnapshot v in liss) {
+        print("times hhhh ${v.documentID}");
         timeIds.add(v.documentID.toString());
-        }
-      });/*document(groupIds).collection(groupIds)
+      }
+    });
+    /*document(groupIds).collection(groupIds)
           .orderBy('timestamp', descending: true).snapshots().forEach((element) {
             print("time elements is...$element");
 
           print("dds re.....${liss[0].documentID.toString()}");
          */ /*timeIds.add(
                 '${liss[0].documentID.toString()}');*/
-     // });
-  //}
+    // });
+    //}
   }
+
   void registerNotification() {
     firebaseMessaging.requestNotificationPermissions();
     firebaseMessaging.configure(onMessage: (Map<String, dynamic> message) {
       print('onMessage: $message');
-      Platform.isAndroid ? showNotification(message['notification']) : showNotification(message['aps']['alert']);
+      Platform.isAndroid
+          ? showNotification(message['notification'])
+          : showNotification(message['aps']['alert']);
       return;
     }, onResume: (Map<String, dynamic> message) {
       print('onResume: $message');
@@ -119,27 +129,34 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver{
 
     firebaseMessaging.getToken().then((token) {
       print('token: $token');
-      Firestore.instance.collection('users').document(currentUserId).updateData({'pushToken': token});
+      Firestore.instance
+          .collection('users')
+          .document(currentUserId)
+          .updateData({'pushToken': token});
     }).catchError((err) {
       Fluttertoast.showToast(msg: err.message.toString());
     });
   }
 
   void configLocalNotification() {
-    var initializationSettingsAndroid = AndroidInitializationSettings('app_icon');
+    var initializationSettingsAndroid =
+        AndroidInitializationSettings('app_icon');
     var initializationSettingsIOS = new IOSInitializationSettings();
-    var initializationSettings = new InitializationSettings(initializationSettingsAndroid, initializationSettingsIOS);
+    var initializationSettings = new InitializationSettings(
+        initializationSettingsAndroid, initializationSettingsIOS);
     flutterLocalNotificationsPlugin.initialize(initializationSettings);
   }
 
   void onItemMenuPress(Choice choice) {
-    switch(choice.title){
-      case 'Log out': handleSignOut();
+    switch (choice.title) {
+      case 'Log out':
+        handleSignOut();
         break;
-      case 'Settings': Navigator.push(context, MaterialPageRoute(builder: (context) => Settings()));
+      case 'Settings':
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => Settings()));
         break;
     }
-
   }
 
   void showNotification(message) async {
@@ -155,18 +172,25 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver{
       enableVibration: true,
       importance: Importance.Max,
       priority: Priority.High,
+      ongoing: true,
     );
-    var iOSPlatformChannelSpecifics = new IOSNotificationDetails(presentAlert: true, presentSound: true);
-    var platformChannelSpecifics =
-        NotificationDetails(androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+    var iOSPlatformChannelSpecifics =
+        new IOSNotificationDetails(presentAlert: true, presentSound: true);
+    var platformChannelSpecifics = NotificationDetails(
+        androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
 
     print("Notification messge is this:     $message");
-//    print(message['body'].toString());
-//    print(json.encode(message));
+    print(message['body'].toString());
+    print(json.encode(message));
 
-    await flutterLocalNotificationsPlugin.show(
-        0, message['title'].toString(), message['body'].toString(), platformChannelSpecifics,
+    await flutterLocalNotificationsPlugin.show(0, message['title'].toString(),
+        message['body'].toString(), platformChannelSpecifics,
         payload: json.encode(message));
+  }
+
+  void _navigateToItemDetail(Map<String, dynamic> message) {
+    final String pagechooser = message['status'];
+    Navigator.pushNamed(context, pagechooser);
   }
 
   Future<bool> onBackPress() {
@@ -179,7 +203,8 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver{
         context: context,
         builder: (BuildContext context) {
           return SimpleDialog(
-            contentPadding: EdgeInsets.only(left: 0.0, right: 0.0, top: 0.0, bottom: 0.0),
+            contentPadding:
+                EdgeInsets.only(left: 0.0, right: 0.0, top: 0.0, bottom: 0.0),
             children: <Widget>[
               Container(
                 color: themeColor,
@@ -198,7 +223,10 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver{
                     ),
                     Text(
                       'Exit app',
-                      style: TextStyle(color: Colors.white, fontSize: 18.0, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.bold),
                     ),
                     Text(
                       'Are you sure to exit app?',
@@ -222,7 +250,8 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver{
                     ),
                     Text(
                       'CANCEL',
-                      style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                          color: primaryColor, fontWeight: FontWeight.bold),
                     )
                   ],
                 ),
@@ -242,7 +271,8 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver{
                     ),
                     Text(
                       'YES',
-                      style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                          color: primaryColor, fontWeight: FontWeight.bold),
                     )
                   ],
                 ),
@@ -271,9 +301,10 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver{
     this.setState(() {
       isLoading = false;
     });
-    Navigator.of(context)
-        .pushAndRemoveUntil(MaterialPageRoute(builder: (context) => WelcomeScreen()), (Route<dynamic> route) => false);
-}
+    Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => WelcomeScreen()),
+        (Route<dynamic> route) => false);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -286,7 +317,10 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver{
           style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
         ),
         actions: <Widget>[
-          IconButton(icon: Icon(Icons.search),onPressed: (){},),
+          IconButton(
+            icon: Icon(Icons.search),
+            onPressed: () {},
+          ),
           PopupMenuButton<Choice>(
             onSelected: onItemMenuPress,
             itemBuilder: (BuildContext context) {
@@ -324,13 +358,21 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver{
                   if (!snapshot.hasData) {
                     return Center(
                       child: Container(
-                        child: Text('No contacts'),
+                        height: MediaQuery.of(context).size.height,
+                        width: MediaQuery.of(context).size.width,
+                        child: Center(
+                          child: Text(
+                            'No Contacts',
+                            textScaleFactor: 1.3,
+                          ),
+                        ),
                       ),
                     );
                   } else {
                     return ListView.builder(
                       padding: EdgeInsets.all(10.0),
-                      itemBuilder: (context, index) => buildItem(context, snapshot.data.documents[index], index),
+                      itemBuilder: (context, index) =>
+                          buildItem(context, snapshot, index),
                       itemCount: snapshot.data.documents.length,
                       shrinkWrap: true,
                     );
@@ -349,87 +391,122 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver{
     );
   }
 
-  Widget buildItem(BuildContext context, DocumentSnapshot document, index) {
-    print("indexes rrr....$index");
-    if (document['id'] == currentUserId) {
-      return Container();
-    } else {
-      return Container(
-        child: FlatButton(
-          child: Row(
-            children: <Widget>[
-              Material(
-                child: document['photoUrl'] != null
-                    ? CachedNetworkImage(
-                        placeholder: (context, url) => Container(
-                          child: CircularProgressIndicator(
-                            strokeWidth: 1.0,
-                            valueColor: AlwaysStoppedAnimation<Color>(themeColor),
-                          ),
-                          width: 50.0,
-                          height: 50.0,
-                          padding: EdgeInsets.all(15.0),
-                        ),
-                        imageUrl: document['photoUrl'],
-                        width: 50.0,
-                        height: 50.0,
-                        fit: BoxFit.cover,
-                      )
-                    : Icon(
-                        Icons.account_circle,
-                        size: 50.0,
-                        color: greyColor,
-                      ),
-                borderRadius: BorderRadius.all(Radius.circular(25.0)),
-                clipBehavior: Clip.hardEdge,
-              ),
-              Flexible(
-                child: Container(
+  Widget buildItem(BuildContext context, AsyncSnapshot snapshotUser, index) {
+    DocumentSnapshot document = snapshotUser.data.documents[index];
+    String chatId = currentUserId.toString() + "-" + document['id'].toString();
+    return StreamBuilder(
+        stream: Firestore.instance
+            .collection('messages')
+            .document(chatId)
+            .collection(chatId)
+            .orderBy('timestamp', descending: false)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData && !snapshot.hasError) {
+            if (document['id'] == currentUserId) {
+              return Container();
+            } else {
+              String message = "";
+              String talkingTo = person;
+              dynamic dtum = snapshot.data;
+              String lastDate = "";
+              List<DocumentSnapshot> listMessage = dtum.documents;
+              for (DocumentSnapshot d in listMessage) {
+                if (d.data['idFrom'].toString() != currentUserId)
+                  talkingTo =
+                      document['nickname'].toString().split(" ").elementAt(0);
+                else
+                  talkingTo = person.toString().split(" ").elementAt(0);
+                if (d.data['type'].toString() == '0')
+                  message = talkingTo + ": " + d.data['content'].toString();
+                else if (d.data['type'].toString() == '1')
+                  message = '$talkingTo: Photo';
+                else
+                  message = '';
+                lastDate = DateFormat.jm().format(
+                    DateTime.fromMillisecondsSinceEpoch(
+                        int.parse(d.data['timestamp'])));
+              }
+              return InkWell(
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => Chat(
+                                peerId: document.documentID,
+                                peerAvatar: document['photoUrl'],
+                                //connectionStatus: document['connectionStatus'],
+                                userName: document['nickname'],
+                              )));
+                },
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 2),
                   child: Column(
-                    children: <Widget>[
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
                       ListTile(
-                        title: Text(
-                          '${document['nickname']}',
-                          style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),),
-                        /*trailing: timeIds.length != 0 ? Text(
-                            DateFormat('kk:mm')
-                                .format(DateTime.fromMillisecondsSinceEpoch(int.parse(timeIds[index++])))
-                        ): Container(width: 10,height: 10,),*/
-                      ),
-                      /*Container(
-                        child: Text(
-                          '${document['nickname']}',
-                          style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
+                        leading: document['photoUrl'] != null
+                            ? CachedNetworkImage(
+                                imageUrl: document['photoUrl'],
+                                imageBuilder: (context, imageProvider) =>
+                                    Container(
+                                  width: 55.0,
+                                  height: 55.0,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    image: DecorationImage(
+                                        image: imageProvider, fit: BoxFit.fill),
+                                  ),
+                                ),
+                                placeholder: (context, url) =>
+                                    CircularProgressIndicator(),
+                                errorWidget: (context, url, error) =>
+                                    Icon(Icons.error),
+                              )
+                            : Icon(
+                                Icons.account_circle,
+                                size: 60.0,
+                                color: greyColor,
+                              ),
+                        title: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: <Widget>[
+                            Text(
+                              '${document['nickname'][0].toUpperCase()}${document['nickname'].substring(1)}',
+                              textScaleFactor: 1.2,
+                              style: TextStyle(
+                                  color: primaryColor,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              lastDate,
+                              style: TextStyle(
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
                         ),
-                        alignment: Alignment.centerLeft,
-                        margin: EdgeInsets.fromLTRB(10.0, 0.0, 0.0, 5.0),
-                      ),*/
-                      Container()
+                        subtitle: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 5.0),
+                          child: Text(
+                            message,
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                        ),
+                      ),
+                      Divider(
+                        thickness: 1.2,
+                        height: 5,
+                        indent: 80,
+                      )
                     ],
                   ),
-                  margin: EdgeInsets.only(left: 20.0),
                 ),
-              ),
-            ],
-          ),
-          onPressed: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => Chat(
-                          peerId: document.documentID,
-                          peerAvatar: document['photoUrl'],
-                          //connectionStatus: document['connectionStatus'],
-                          userName: document['nickname'],
-                        )));
-          },
-          color: greyColor2,
-          padding: EdgeInsets.fromLTRB(25.0, 10.0, 25.0, 10.0),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
-        ),
-        margin: EdgeInsets.only(bottom: 10.0, left: 5.0, right: 5.0),
-      );
-    }
+              );
+            }
+          } else
+            return Container();
+        });
   }
 }
 

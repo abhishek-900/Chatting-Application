@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/1247342064/agora_rtc_engine.iml" filepath="$PROJECT_DIR$/.idea/modules/1247342064/agora_rtc_engine.iml" group="android/agora_rtc_engine" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/android.iml" filepath="$PROJECT_DIR$/.idea/modules/android.iml" group="android" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/app.iml" group="android/app" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/-792904816/cloud_firestore.iml" filepath="$PROJECT_DIR$/.idea/modules/-792904816/cloud_firestore.iml" group="android/cloud_firestore" />
@@ -19,6 +20,7 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/-1348393495/path_provider.iml" filepath="$PROJECT_DIR$/.idea/modules/-1348393495/path_provider.iml" group="android/path_provider" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/-1368354245/path_provider_linux.iml" filepath="$PROJECT_DIR$/.idea/modules/-1368354245/path_provider_linux.iml" group="android/path_provider_linux" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/1612903679/path_provider_macos.iml" filepath="$PROJECT_DIR$/.idea/modules/1612903679/path_provider_macos.iml" group="android/path_provider_macos" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/1328024570/permission_handler.iml" filepath="$PROJECT_DIR$/.idea/modules/1328024570/permission_handler.iml" group="android/permission_handler" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/1084230060/shared_preferences.iml" filepath="$PROJECT_DIR$/.idea/modules/1084230060/shared_preferences.iml" group="android/shared_preferences" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/-1987285763/shared_preferences_macos.iml" filepath="$PROJECT_DIR$/.idea/modules/-1987285763/shared_preferences_macos.iml" group="android/shared_preferences_macos" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/860265980/shared_preferences_web.iml" filepath="$PROJECT_DIR$/.idea/modules/860265980/shared_preferences_web.iml" group="android/shared_preferences_web" />

@@ -181,12 +181,10 @@ class ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     } else {
       groupChatId = '$peerId-$id';
     }
-
     Firestore.instance
         .collection('users')
         .document(id)
         .updateData({'chattingWith': peerId});
-
     setState(() {});
   }
 
@@ -263,6 +261,7 @@ class ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   }
 
   Widget buildItem(int index, DocumentSnapshot document) {
+    var mq = MediaQuery.of(context).size;
     if (document['idFrom'] == id) {
       // Right (my message)
       return Row(
@@ -291,13 +290,13 @@ class ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                                 fontSize: 12.0,
                                 fontStyle: FontStyle.italic),
                           ),
-                          margin: EdgeInsets.only(left: 100.0, top: 5.0,),
+                          margin: EdgeInsets.only( top: 5.0,),
                         ),
                       )
                     ],
                   ),
                   padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),
-                  width: 200.0,
+                  width: mq.width/2,
                   decoration: BoxDecoration(
                       /*gradient: LinearGradient(
                         colors: [Colors.deepPurpleAccent.withOpacity(0.5),Colors.deepPurpleAccent ],
@@ -323,10 +322,12 @@ class ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
               : document['type'] == 1
                   // Image
                   ? Container(
+            padding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: <Widget>[
                           FlatButton(
+                            padding: EdgeInsets.all(0.0),
                             child: Material(
                               child: CachedNetworkImage(
                                 placeholder: (context, url) => Container(
@@ -371,10 +372,10 @@ class ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                                       builder: (context) =>
                                           FullPhoto(url: document['content'])));
                             },
-                            padding: EdgeInsets.all(8),
+                            //padding: EdgeInsets.all(8),
                           ),
                           Align(
-                            alignment: Alignment.centerLeft,
+                            alignment: Alignment.centerRight,
                             child: Container(
                               child: Text(
                                 DateFormat('dd MMM kk:mm').format(
@@ -385,7 +386,7 @@ class ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                                     fontSize: 12.0,
                                     fontStyle: FontStyle.italic),
                               ),
-                              margin: EdgeInsets.only(right: 10.0, top: 5.0,bottom: 5.0),
+                              margin: EdgeInsets.only(top: 5.0,bottom: 5.0),
                             ),
                           ),
                         ],
@@ -457,22 +458,25 @@ class ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                         ),
                         //isLastMessageLeft(index)
                              Container(
-                          child: Text(
-                            DateFormat('dd MMM kk:mm').format(
-                                DateTime.fromMillisecondsSinceEpoch(
-                                    int.parse(document['timestamp']))),
-                            style: TextStyle(
-                                color: greyColor,
-                                fontSize: 12.0,
-                                fontStyle: FontStyle.italic),
+                          child: Align(
+                            alignment: Alignment.centerRight,
+                            child: Text(
+                              DateFormat('dd MMM kk:mm').format(
+                                  DateTime.fromMillisecondsSinceEpoch(
+                                      int.parse(document['timestamp']))),
+                              style: TextStyle(
+                                  color: greyColor,
+                                  fontSize: 12.0,
+                                  fontStyle: FontStyle.italic),
+                            ),
                           ),
-                          margin: EdgeInsets.only(left: 100.0, top: 5.0,),
+                          margin: EdgeInsets.only( top: 5.0,),
                         )
                             //: Container()
                       ],
                     ),
                     padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),
-                    width: 200.0,
+                    width: mq.width/2,
                     decoration: BoxDecoration(
                         /*gradient: LinearGradient(
                           colors: [Color(0xff8a2be2).withOpacity(0.5), Color(0xff8A2BE2)],
@@ -785,21 +789,8 @@ class ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             child: Container(
               margin: EdgeInsets.symmetric(horizontal: 1.0),
               child: IconButton(
-                icon: Icon(Icons.image),
-                onPressed: getImage,
-                color: primaryColor,
-              ),
-            ),
-            color: Colors.white,
-          ),
-          Material(
-            child: Container(
-              margin: EdgeInsets.symmetric(horizontal: 1.0),
-              child: IconButton(
-                icon: Icon(Icons.face),
-                onPressed: getSticker,
-                color: primaryColor,
-              ),
+                  icon: Icon(Icons.perm_media),
+                  onPressed: showBtmSheet)
             ),
             color: Colors.white,
           ),
@@ -874,5 +865,65 @@ class ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
               },
             ),
     );
+  }
+
+  void showBtmSheet() {
+    showModalBottomSheet(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))
+        ),
+        context: (context), builder: (context){
+      return Container(
+        height: 100,
+        child: Row(
+          children: <Widget>[
+            Material(
+              child: Container(
+                margin: EdgeInsets.symmetric(horizontal: 1.0),
+                child: IconButton(
+                  icon: Icon(Icons.image),
+                  onPressed: getImage,
+                  color: primaryColor,
+                ),
+              ),
+              color: Colors.white,
+            ),
+            Material(
+              child: Container(
+                margin: EdgeInsets.symmetric(horizontal: 1.0),
+                child: IconButton(
+                  icon: Icon(Icons.face),
+                  onPressed: getSticker,
+                  color: primaryColor,
+                ),
+              ),
+              color: Colors.white,
+            ),
+            Material(
+              child: Container(
+                margin: EdgeInsets.symmetric(horizontal: 1.0),
+                child: IconButton(
+                  icon: Icon(Icons.audiotrack),
+                  onPressed: (){},
+                  color: primaryColor,
+                ),
+              ),
+              color: Colors.white,
+            ),
+            Material(
+              child: Container(
+                margin: EdgeInsets.symmetric(horizontal: 1.0),
+                child: IconButton(
+                  icon: Icon(Icons.contacts),
+                  onPressed: getSticker,
+                  color: primaryColor,
+                ),
+              ),
+              color: Colors.white,
+            ),
+          ],
+        ),
+      );
+    });
   }
 }
