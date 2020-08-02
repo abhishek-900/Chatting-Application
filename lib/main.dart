@@ -1,5 +1,4 @@
 import 'package:chatsakki/intro_and_uthenticate/Screens/Welcome/welcome_screen.dart';
-import 'package:chatsakki/send_audio.dart';
 import 'package:flutter/material.dart';
 import 'const.dart';
 import 'helperfunctions.dart';
@@ -7,14 +6,15 @@ import 'home.dart';
 
 void main(){
   WidgetsFlutterBinding.ensureInitialized();
+
   getLoggedInState();
+
 }
 getLoggedInState() async {
   String id;
   bool userIsLoggedIn = await HelperFunctions.getUserLoggedInSharedPreference();
   id = await HelperFunctions.getUserIdSharedPreference();
   print("main mein hu id ayi h..................... $id and $userIsLoggedIn");
-
   if (userIsLoggedIn != null) {
     if (id != null)
       runApp(MaterialApp(
@@ -48,7 +48,7 @@ getLoggedInState() async {
 }
 
 /*
-void main() => runApp(MaterialApp(home: AudioRecorder(),));
+void main() => runApp(MyApp());
 */
 
 /*

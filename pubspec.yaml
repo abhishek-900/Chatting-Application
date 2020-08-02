@@ -43,6 +43,10 @@ dependencies:
   flutter_svg: ^0.17.4
   agora_rtc_engine: ^1.0.12
   permission_handler: ^3.0.0
+  jitsi_meet: ^0.2.4
+  camera:
+  path_provider:
+  path:
   # flutter_sound: ^1.0.6
 
 

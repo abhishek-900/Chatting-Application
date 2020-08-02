@@ -7,6 +7,7 @@ import 'package:chatsakki/widget/curve_app_bar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'chat.dart';
 import 'const.dart';
@@ -22,18 +23,16 @@ class HomeScreen extends StatefulWidget {
   HomeScreen({Key key, @required this.currentUserId}) : super(key: key);
 
   @override
-  State createState() => HomeScreenState(currentUserId: currentUserId);
+  State createState() => HomeScreenState();
 }
 
 class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
-  HomeScreenState({Key key, @required this.currentUserId});
-  String connectionStatus;
-  final String currentUserId;
+   String connectionStatus;
   final FirebaseMessaging firebaseMessaging = FirebaseMessaging();
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
-  //final GoogleSignIn googleSignIn = GoogleSignIn();
-  List<String> chtIds = [];
+  DateTime currentBackPressTime;
+   List<String> chtIds = [];
   List<String> timeIds = [];
   String person;
   bool isLoading = false;
@@ -50,7 +49,7 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     gettingTime();
     registerNotification();
     configLocalNotification();
-    getLists();
+    //getLists();
   }
 
   @override
@@ -58,10 +57,10 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     // TODO: implement didChangeAppLifecycleState
     super.didChangeAppLifecycleState(state);
     //print(" checking status :- :- :-     $state");
-    if (state == AppLifecycleState.resumed) {
-      connectionStatus = 'Online';
-    } else {
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
       connectionStatus = 'Offline';
+    } else {
+      connectionStatus = 'Online';
     }
     Firestore.instance
         .collection('users')
@@ -71,45 +70,32 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   void gettingTime() async {
-    print("now printing users snpssss");
-
     await Firestore.instance.collection('users').snapshots().forEach((element) {
       List<DocumentSnapshot> liss = element.documents;
       for (DocumentSnapshot dd in liss) {
-        if (dd.documentID != widget.currentUserId)
-          chtIds.add(
-              '${widget.currentUserId.toString()}-${dd.documentID.toString()}');
-        else
+        if (dd.documentID != widget.currentUserId) {
+          if (chtIds.length != 0)
+            chtIds.add(
+                '${widget.currentUserId.toString()}-${dd.documentID
+                    .toString()}');
+        }else
           person = dd.data['nickname'];
-        print(person);
+        print("$person printing person...");
       }
     });
   }
 
-  void getLists() async {
-    print("getting lists....");
-    //for(String groupIds in chtIds){
-    print("iss id mein... ");
+  /*void getLists() async {
     await Firestore.instance
         .collection('messages')
         .snapshots()
         .forEach((element) {
       List<DocumentSnapshot> liss = element.documents;
       for (DocumentSnapshot v in liss) {
-        print("times hhhh ${v.documentID}");
         timeIds.add(v.documentID.toString());
       }
     });
-    /*document(groupIds).collection(groupIds)
-          .orderBy('timestamp', descending: true).snapshots().forEach((element) {
-            print("time elements is...$element");
-
-          print("dds re.....${liss[0].documentID.toString()}");
-         */ /*timeIds.add(
-                '${liss[0].documentID.toString()}');*/
-    // });
-    //}
-  }
+  }*/
 
   void registerNotification() {
     firebaseMessaging.requestNotificationPermissions();
@@ -131,7 +117,7 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       print('token: $token');
       Firestore.instance
           .collection('users')
-          .document(currentUserId)
+          .document(widget.currentUserId)
           .updateData({'pushToken': token});
     }).catchError((err) {
       Fluttertoast.showToast(msg: err.message.toString());
@@ -188,17 +174,11 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         payload: json.encode(message));
   }
 
-  void _navigateToItemDetail(Map<String, dynamic> message) {
+ /* void _navigateToItemDetail(Map<String, dynamic> message) {
     final String pagechooser = message['status'];
     Navigator.pushNamed(context, pagechooser);
-  }
-
-  Future<bool> onBackPress() {
-    openDialog();
-    return Future.value(false);
-  }
-
-  Future<Null> openDialog() async {
+  }*/
+  /*Future<Null> openDialog() async {
     switch (await showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -225,7 +205,12 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                       'Exit app',
                       style: TextStyle(
                           color: Colors.white,
-                          fontSize: 18.0,
+                          */
+  /*Future<bool> onBackPress() {
+    openDialog();
+    return Future.value(false);
+  }*/
+  /*        fontSize: 18.0,
                           fontWeight: FontWeight.bold),
                     ),
                     Text(
@@ -287,17 +272,13 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         break;
     }
   }
+*/
 
   Future<Null> handleSignOut() async {
     this.setState(() {
       isLoading = true;
     });
-    /*await FirebaseAuth.instance.signOut();
-    //  await googleSignIn.disconnect();
-      await GoogleSignIn().signOut();
-*/
     await AuthController().signOut();
-
     this.setState(() {
       isLoading = false;
     });
@@ -308,14 +289,13 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    print("cht ids to dekhlo...${chtIds}");
-    print("time ids to dekhlo...${timeIds} ${timeIds.length}");
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'MAIN',
+          'CHAT APPLICATION',
           style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
         ),
+        leading: null,
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.search),
@@ -386,70 +366,101 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             )
           ],
         ),
-        onWillPop: onBackPress,
+        onWillPop: onWillPop,
       ),
     );
   }
 
+   Future<bool> onWillPop() {
+     DateTime now = DateTime.now();
+     if (currentBackPressTime == null ||
+         now.difference(currentBackPressTime) > Duration(seconds: 2)) {
+       currentBackPressTime = now;
+       Fluttertoast.showToast(msg: "Press once again to exit");
+       return Future.value(false);
+     }
+     return Future.value(true);
+   }
+
   Widget buildItem(BuildContext context, AsyncSnapshot snapshotUser, index) {
     DocumentSnapshot document = snapshotUser.data.documents[index];
-    String chatId = currentUserId.toString() + "-" + document['id'].toString();
-    return StreamBuilder(
-        stream: Firestore.instance
-            .collection('messages')
-            .document(chatId)
-            .collection(chatId)
-            .orderBy('timestamp', descending: false)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.hasData && !snapshot.hasError) {
-            if (document['id'] == currentUserId) {
-              return Container();
-            } else {
+    String chatId="";
+    if(document.documentID.toString().contains(widget.currentUserId.toString()))
+      return Container();
+    else{
+      if (widget.currentUserId.hashCode <= document.documentID.hashCode) {
+        chatId = '${widget.currentUserId}-${document.documentID}';
+      } else {
+        chatId = '${document.documentID}-${widget.currentUserId}';
+      }
+      print("chatId = $chatId");
+      return StreamBuilder(
+          stream: Firestore.instance
+              .collection('messages')
+              .document(chatId)
+              .collection(chatId)
+              .orderBy('timestamp', descending: false)
+              .snapshots(),
+          builder: (context, snapshot) {
+            if (snapshot.hasData && !snapshot.hasError) {
+              dynamic dtum = snapshot.data;
               String message = "";
               String talkingTo = person;
-              dynamic dtum = snapshot.data;
-              String lastDate = "";
               List<DocumentSnapshot> listMessage = dtum.documents;
-              for (DocumentSnapshot d in listMessage) {
-                if (d.data['idFrom'].toString() != currentUserId)
-                  talkingTo =
-                      document['nickname'].toString().split(" ").elementAt(0);
-                else
-                  talkingTo = person.toString().split(" ").elementAt(0);
-                if (d.data['type'].toString() == '0')
-                  message = talkingTo + ": " + d.data['content'].toString();
-                else if (d.data['type'].toString() == '1')
-                  message = '$talkingTo: Photo';
-                else
-                  message = '';
-                lastDate = DateFormat.jm().format(
-                    DateTime.fromMillisecondsSinceEpoch(
-                        int.parse(d.data['timestamp'])));
-              }
-              return InkWell(
-                onTap: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => Chat(
-                                peerId: document.documentID,
-                                peerAvatar: document['photoUrl'],
-                                //connectionStatus: document['connectionStatus'],
-                                userName: document['nickname'],
-                              )));
-                },
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 2),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ListTile(
-                        leading: document['photoUrl'] != null
-                            ? CachedNetworkImage(
-                                imageUrl: document['photoUrl'],
-                                imageBuilder: (context, imageProvider) =>
-                                    Container(
+
+              String lastDate = "";
+              bool isSeen = false;
+              int totalUnseenMessage = 0;
+              if (document.documentID != widget.currentUserId) {
+                print("now id is==${document.documentID}");
+                print("${listMessage.toString()}");
+                for(DocumentSnapshot d in listMessage) {
+                  lastDate = DateFormat.jm().format(
+                      DateTime.fromMillisecondsSinceEpoch(
+                          int.parse(d.documentID.toString())));
+                  print("lst dte is changed to :== $lastDate");
+                  if (d.data['idFrom'].toString() != widget.currentUserId) {
+                    talkingTo =
+                        document['nickname'].toString().split(" ").elementAt(0);
+                    if(d.data['isSeen'].toString() != "Read") {
+                      isSeen = true;
+                      totalUnseenMessage++;
+                    }
+                    else
+                      isSeen = false;
+                  } else
+                    talkingTo = person.toString().split(" ").elementAt(0);
+
+                  if (d.data['type'].toString() == '0')
+                    message = talkingTo + ": " + d.data['content'].toString();
+                  else if (d.data['type'].toString() == '1')
+                    message = '$talkingTo: Photo';
+                  else
+                    message = '';
+                }
+                return InkWell(
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => Chat(
+                              peerId: document.documentID,
+                              peerAvatar: document['photoUrl'],
+                              //connectionStatus: document['connectionStatus'],
+                              userName: document['nickname'],
+                            )));
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ListTile(
+                          leading: document['photoUrl'] != null
+                              ? CachedNetworkImage(
+                            imageUrl: document['photoUrl'],
+                            imageBuilder: (context, imageProvider) =>
+                                Container(
                                   width: 55.0,
                                   height: 55.0,
                                   decoration: BoxDecoration(
@@ -458,61 +469,76 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         image: imageProvider, fit: BoxFit.fill),
                                   ),
                                 ),
-                                placeholder: (context, url) =>
-                                    CircularProgressIndicator(),
-                                errorWidget: (context, url, error) =>
-                                    Icon(Icons.error),
+                            placeholder: (context, url) =>
+                                CircularProgressIndicator(),
+                            errorWidget: (context, url, error) =>
+                                Icon(Icons.error),
+                          )
+                              : Icon(
+                            Icons.account_circle,
+                            size: 60.0,
+                            color: greyColor,
+                          ),
+                          title: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              Text(
+                                '${document['nickname'][0].toUpperCase()}${document['nickname'].substring(1)}',
+                                textScaleFactor: 1.2,
+                                style: TextStyle(
+                                    color: primaryColor,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                lastDate,
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
+                          subtitle: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 5.0),
+                                child: Text(
+                                  message,
+                                  style: TextStyle(color: isSeen ? Colors.black :Colors.grey, fontWeight: isSeen ? FontWeight.bold : FontWeight.normal),
+                                ),
+                              ),
+                              totalUnseenMessage > 0 ? Container(
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.red,
+                                ),
+                                padding: EdgeInsets.all(5),
+                                child: Text(totalUnseenMessage.toString(), style: TextStyle(color: Colors.white),),
                               )
-                            : Icon(
-                                Icons.account_circle,
-                                size: 60.0,
-                                color: greyColor,
-                              ),
-                        title: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[
-                            Text(
-                              '${document['nickname'][0].toUpperCase()}${document['nickname'].substring(1)}',
-                              textScaleFactor: 1.2,
-                              style: TextStyle(
-                                  color: primaryColor,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                            Text(
-                              lastDate,
-                              style: TextStyle(
-                                color: Colors.grey,
-                              ),
-                            ),
-                          ],
-                        ),
-                        subtitle: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 5.0),
-                          child: Text(
-                            message,
-                            style: TextStyle(color: Colors.grey),
+                                  :Container(),
+                            ],
                           ),
                         ),
-                      ),
-                      Divider(
-                        thickness: 1.2,
-                        height: 5,
-                        indent: 80,
-                      )
-                    ],
+                        Divider(
+                          thickness: 1.2,
+                          height: 5,
+                          indent: 80,
+                        )
+                      ],
+                    ),
                   ),
-                ),
-              );
-            }
-          } else
-            return Container();
-        });
+                );
+              }
+              return Container();
+            } else
+              return Container();
+          });
+    }
   }
 }
 
 class Choice {
   const Choice({this.title, this.icon});
-
   final String title;
   final IconData icon;
 }

@@ -63,7 +63,7 @@ class AuthController {
               .now()
               .millisecondsSinceEpoch
               .toString(),
-          'chattingWith': null,
+          'chattingWith': '',
           'connectionStatus' : 'Online'
         });
 
@@ -127,8 +127,8 @@ class AuthController {
                 .now()
                 .millisecondsSinceEpoch
                 .toString(),
-            'chattingWith': null,
-            'connectionStatus' : 'Online'
+            'chattingWith': "",
+            'connectionStatus' : "Online"
           });
           await HelperFunctions.saveUserLoggedInSharedPreference(true);
           await HelperFunctions.saveUserEmailSharedPreference(
@@ -161,11 +161,8 @@ class AuthController {
 
   Future signOut() async {
     try {
-      bool ans = await _googleSignIn.isSignedIn();
       String id = await HelperFunctions.getUserIdSharedPreference();
       await _auth.signOut();
-      if(ans)
-        await _googleSignIn.disconnect();
       await _googleSignIn.signOut();
       Firestore.instance.collection('users').document(id).updateData({'connectionStatus' : 'Offline'});
       await HelperFunctions.saveUserLoggedInSharedPreference(null);
@@ -178,6 +175,20 @@ class AuthController {
     } catch (e) {
       print(e.toString());
       return null;
+    }
+  }
+
+  deleteAccount() async {
+    try {
+      FirebaseUser user = await _auth.currentUser();
+      bool ans = await _googleSignIn.isSignedIn();
+      if (ans) {
+        _googleSignIn.disconnect();
+      }
+      user.delete();
+    }catch(e){
+      print("delete error :- "+ e.toString());
+
     }
   }
 
