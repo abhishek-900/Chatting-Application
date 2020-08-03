@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:io';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:camera/camera.dart';
 import 'package:chatsakki/controller/auth_controller.dart';
 import 'package:chatsakki/helperfunctions.dart';
+import 'package:chatsakki/my_work/video_call/video_chat.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -40,7 +40,13 @@ class Chat extends StatelessWidget {
         actions: <Widget>[
           IconButton(
               icon: Icon(Icons.videocam),
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => VideoChat(
+                          /*id: peerId, avatar: peerAvatar, name: userName,*/)));
+              },
           ),
         ],
         title: Row(
@@ -143,7 +149,7 @@ class ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   bool isLoading;
   bool isShowSticker;
   String imageUrl;
-  String chattingWith = null;
+  String chattingWith = "";
   final TextEditingController textEditingController = TextEditingController();
   final ScrollController listScrollController = ScrollController();
   final FocusNode focusNode = FocusNode();
