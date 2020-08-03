@@ -4,7 +4,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:camera/camera.dart';
 import 'package:chatsakki/controller/auth_controller.dart';
 import 'package:chatsakki/helperfunctions.dart';
-import 'package:chatsakki/my_work/video_call/video_chat.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -40,13 +39,7 @@ class Chat extends StatelessWidget {
         actions: <Widget>[
           IconButton(
               icon: Icon(Icons.videocam),
-              onPressed: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => VideoChat(
-                          /*id: peerId, avatar: peerAvatar, name: userName,*/)));
-              },
+              onPressed: () {},
           ),
         ],
         title: Row(
@@ -54,6 +47,7 @@ class Chat extends StatelessWidget {
             Material(
               child: peerAvatar != null
                   ? CachedNetworkImage(
+                //run this in ur
                       /*placeholder: (context, url) => Container(
                   child: CircularProgressIndicator(
                     strokeWidth: 1.0,
@@ -81,8 +75,7 @@ class Chat extends StatelessWidget {
               child: StreamBuilder(
                   stream: AuthController().getConnectionStatus(peerId: peerId),
                   builder: (context, snapshot) {
-                    print(
-                        " to get the connection status: ---- ${snapshot.data.toString()}");
+                    print(" to get the connection status: ---- ${snapshot.data.toString()}");
                     if (snapshot.data == null || snapshot == null) {
                       return Text(
                         userName,
