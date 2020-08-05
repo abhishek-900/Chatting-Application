@@ -1,4 +1,4 @@
-# chatsakki
+# Chatting- Application
 
 A new Flutter application.
 
